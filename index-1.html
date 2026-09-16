@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo de Líneas de Colectivo — AMBA</title>
+<style>
+  :root{
+    --bg:#0f1418;
+    --panel:#171e24;
+    --panel-2:#1e262d;
+    --border:#2a343c;
+    --text:#e9edf0;
+    --muted:#9aa7b0;
+    --accent:#ffb400;
+    --accent-2:#2fb673;
+    --caba:#3d8bfd;
+    --gba:#ff7a59;
+    --ambas:#a06cff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  header{
+    padding:20px 16px 10px;
+    border-bottom:1px solid var(--border);
+    position:sticky;
+    top:0;
+    background:var(--bg);
+    z-index:10;
+  }
+  header h1{
+    margin:0 0 4px;
+    font-size:1.3rem;
+  }
+  header p{
+    margin:0;
+    color:var(--muted);
+    font-size:0.85rem;
+  }
+  .filters{
+    padding:14px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    border-bottom:1px solid var(--border);
+    background:var(--panel);
+  }
+  .filters input, .filters select{
+    width:100%;
+    padding:10px 12px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--panel-2);
+    color:var(--text);
+    font-size:0.95rem;
+  }
+  .filters-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .filters-row > div{
+    flex:1 1 140px;
+  }
+  .filters label{
+    display:block;
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--muted);
+    margin-bottom:4px;
+  }
+  .contador{
+    padding:10px 16px;
+    color:var(--muted);
+    font-size:0.85rem;
+  }
+  #resultados{
+    padding:0 16px 40px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 16px;
+  }
+  .card-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:8px;
+    flex-wrap:wrap;
+  }
+  .numero{
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--accent);
+  }
+  .tag{
+    font-size:0.68rem;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    padding:3px 8px;
+    border-radius:100px;
+    border:1px solid transparent;
+  }
+  .tag.CABA{ color:var(--caba); border-color:var(--caba); }
+  .tag.GBA{ color:var(--gba); border-color:var(--gba); }
+  .tag.Ambas{ color:var(--ambas); border-color:var(--ambas); }
+  .empresa{
+    color:var(--muted);
+    font-size:0.82rem;
+    margin-left:auto;
+  }
+  .campo{
+    margin-top:8px;
+    font-size:0.88rem;
+    line-height:1.4;
+  }
+  .campo .etiqueta{
+    color:var(--muted);
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    display:block;
+    margin-bottom:2px;
+  }
+  .chip{
+    display:inline-block;
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    border-radius:100px;
+    padding:2px 9px;
+    margin:2px 4px 2px 0;
+    font-size:0.8rem;
+  }
+  .ramal{
+    background:var(--panel-2);
+    border-radius:8px;
+    padding:8px 10px;
+    margin-top:6px;
+    font-size:0.85rem;
+  }
+  .ramal b{ color:var(--accent-2); }
+  .vacio{
+    text-align:center;
+    color:var(--muted);
+    padding:60px 20px;
+    font-size:0.9rem;
+  }
+  footer{
+    padding:20px 16px 40px;
+    color:var(--muted);
+    font-size:0.75rem;
+    border-top:1px solid var(--border);
+    line-height:1.5;
+  }
+  footer a{ color:var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🚌 Catálogo de Líneas de Colectivo</h1>
+  <p>Ciudad de Buenos Aires y Gran Buenos Aires — filtrable por línea, cabecera, barrio y ramal</p>
+</header>
+
+<div class="filters">
+  <div>
+    <label for="buscador">Búsqueda libre</label>
+    <input id="buscador" type="text" placeholder="Ej: 152, Belgrano, La Boca, Panamericana...">
+  </div>
+  <div class="filters-row">
+    <div>
+      <label for="f-cabecera">Cabecera</label>
+      <select id="f-cabecera"><option value="">Todas</option></select>
+    </div>
+    <div>
+      <label for="f-barrio">Barrio / localidad</label>
+      <select id="f-barrio"><option value="">Todos</option></select>
+    </div>
+  </div>
+  <div class="filters-row">
+    <div>
+      <label for="f-tipo">Zona</label>
+      <select id="f-tipo">
+        <option value="">Todas</option>
+        <option value="CABA">Solo CABA</option>
+        <option value="GBA">Solo GBA</option>
+        <option value="Ambas">CABA + GBA</option>
+      </select>
+    </div>
+    <div>
+      <label for="f-comparte">Comparte recorrido con línea</label>
+      <select id="f-comparte"><option value="">Todas</option></select>
+    </div>
+  </div>
+</div>
+
+<div class="contador" id="contador"></div>
+<div id="resultados"></div>
+
+<footer>
+  Datos de referencia recopilados de fuentes públicas (empresas operadoras, Wikipedia, portales de recorridos)
+  a fecha de carga. Los recorridos y ramales cambian con frecuencia por resoluciones de la
+  Secretaría de Transporte: verificá siempre en la fuente oficial antes de viajar.
+  <br><br>
+  <b>¿Cómo agrego más líneas?</b> Editá el array <code>lineas</code> dentro de la etiqueta
+  <code>&lt;script&gt;</code> de este mismo archivo, siguiendo el formato de los ejemplos ya cargados.
+  No hace falta ningún servidor: es un solo archivo HTML, subilo tal cual a GitHub Pages.
+</footer>
+
+<script>
+// ============================================================
+// BASE DE DATOS DE LÍNEAS
+// Para agregar una línea nueva, copiá un objeto y completá sus campos.
+// - tipo: "CABA" | "GBA" | "Ambas"
+// - cabeceras: puntos terminales de la línea (todos los ramales)
+// - barrios: barrios/localidades por los que circula (para filtrar)
+// - ramales: variantes de recorrido dentro de la misma línea
+// - comparteCon: números de otras líneas con las que comparte tramos/corredores
+// ============================================================
+const lineas = [
+  {
+    numero: "60",
+    empresa: "Micro Ómnibus Norte S.A. (MONSA)",
+    tipo: "Ambas",
+    cabeceras: ["Barracas/Constitución", "Barrancas de Belgrano", "San Isidro (Primera Junta y Tiscornia)", "Ingeniero Maschwitz", "Terminal de Ómnibus de Escobar"],
+    barrios: ["Barracas", "Constitución", "Plaza Italia", "Belgrano", "Núñez", "Vicente López", "San Isidro", "Tigre", "Escobar", "Ingeniero Maschwitz", "Benavídez"],
+    ramales: [
+      { nombre: "Ramal A", recorrido: "Barracas/Constitución – San Isidro, por Av. Cabildo / Av. Maipú / Av. Santa Fe / Av. Centenario" },
+      { nombre: "Ramal B", recorrido: "Rincón de Milberg (Tigre) – Barrancas de Belgrano, por Panamericana" },
+      { nombre: "Ramal C", recorrido: "Ingeniero Maschwitz / Terminal de Escobar – Barrancas de Belgrano, por Panamericana" }
+    ],
+    comparteCon: ["152", "59"],
+    notas: "Una de las líneas más históricas de Buenos Aires (en servicio desde 1931). A fines de 2025 recortó los tramos directos a Constitución y Tigre; ahora Barrancas de Belgrano funciona como cabecera de trasbordo."
+  },
+  {
+    numero: "152",
+    empresa: "Empresa Tandilense S.A.C.I.F.I. y de S.",
+    tipo: "Ambas",
+    cabeceras: ["La Boca", "Olivos"],
+    barrios: ["La Boca", "Monserrat", "San Telmo", "Puerto Madero", "Barrio Norte", "Palermo", "Colegiales", "Belgrano", "Puente Saavedra", "Núñez", "Florida", "Vicente López", "Olivos"],
+    ramales: [
+      { nombre: "Ramal Directo", recorrido: "La Boca – Retiro – Palermo – Belgrano – Olivos" },
+      { nombre: "Ramal D", recorrido: "La Boca – Olivos, con desvío por Av. Maipú / Av. General Paz en Puente Saavedra" }
+    ],
+    comparteCon: ["60", "59", "168"],
+    notas: "Recorre gran parte de la Costanera Norte y el corredor Cabildo–Maipú compartido con otras líneas del norte del conurbano."
+  },
+  {
+    numero: "59",
+    empresa: "Micro Ómnibus Norte S.A. (MONSA)",
+    tipo: "Ambas",
+    cabeceras: ["Barracas/Constitución", "Florida", "Munro"],
+    barrios: ["Barracas", "Constitución", "Retiro", "Recoleta", "Palermo", "Belgrano", "Vicente López", "Florida", "Munro"],
+    ramales: [
+      { nombre: "Ramal a Florida", recorrido: "Barracas/Constitución – Florida" },
+      { nombre: "Ramal a Munro", recorrido: "Barracas/Constitución – Munro" }
+    ],
+    comparteCon: ["60", "152"],
+    notas: "La línea más antigua de la ciudad, en servicio desde 1928. Junto con la 60 y la 152 es una de las más emblemáticas y turísticas del AMBA."
+  },
+  {
+    numero: "168",
+    empresa: "Expreso San Isidro S.A. (ESISA) — Grupo DOTA",
+    tipo: "Ambas",
+    cabeceras: ["La Boca", "San Isidro"],
+    barrios: ["La Boca", "Constitución", "Monserrat", "Almagro", "Villa Crespo", "Palermo", "Colegiales", "Belgrano", "Puente Saavedra", "Vicente López", "Olivos", "La Lucila", "Acassuso", "San Isidro"],
+    ramales: [
+      { nombre: "Ramal A", recorrido: "La Boca – San Isidro, recorrido principal" },
+      { nombre: "Ramal B", recorrido: "La Boca – San Isidro, variante por Av. Córdoba" },
+      { nombre: "Ramal C", recorrido: "La Boca – San Isidro, variante por Concepción Arenal" },
+      { nombre: "Ramal E", recorrido: "Servicio fraccionado La Boca – Plaza Once" }
+    ],
+    comparteCon: ["152", "60"],
+    notas: "Comparte el carril del Metrobús Norte (Cabildo–Maipú) con otras líneas que van hacia la zona norte del conurbano."
+  }
+];
+
+// ============================================================
+// LÓGICA DE FILTRADO — no hace falta tocar nada de acá para abajo
+// ============================================================
+function poblarSelect(id, valores){
+  const select = document.getElementById(id);
+  [...new Set(valores)].sort((a,b)=>a.localeCompare(b,'es')).forEach(v=>{
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    select.appendChild(opt);
+  });
+}
+
+const todasCabeceras = lineas.flatMap(l=>l.cabeceras);
+const todosBarrios = lineas.flatMap(l=>l.barrios);
+const todasLineasNums = lineas.map(l=>l.numero);
+poblarSelect('f-cabecera', todasCabeceras);
+poblarSelect('f-barrio', todosBarrios);
+poblarSelect('f-comparte', todasLineasNums);
+
+const $buscador = document.getElementById('buscador');
+const $cabecera = document.getElementById('f-cabecera');
+const $barrio = document.getElementById('f-barrio');
+const $tipo = document.getElementById('f-tipo');
+const $comparte = document.getElementById('f-comparte');
+const $resultados = document.getElementById('resultados');
+const $contador = document.getElementById('contador');
+
+function normalizar(s){
+  return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
+function coincideTexto(linea, texto){
+  if(!texto) return true;
+  const t = normalizar(texto);
+  const bolsa = [
+    linea.numero, linea.empresa, ...linea.cabeceras, ...linea.barrios,
+    ...linea.ramales.map(r=>r.nombre+' '+r.recorrido),
+    ...linea.comparteCon, linea.notas||''
+  ].join(' ');
+  return normalizar(bolsa).includes(t);
+}
+
+function renderizar(){
+  const texto = $buscador.value;
+  const cabecera = $cabecera.value;
+  const barrio = $barrio.value;
+  const tipo = $tipo.value;
+  const comparte = $comparte.value;
+
+  const filtradas = lineas.filter(l=>{
+    if(!coincideTexto(l, texto)) return false;
+    if(cabecera && !l.cabeceras.includes(cabecera)) return false;
+    if(barrio && !l.barrios.includes(barrio)) return false;
+    if(tipo && l.tipo !== tipo) return false;
+    if(comparte && !l.comparteCon.includes(comparte)) return false;
+    return true;
+  });
+
+  $contador.textContent = `${filtradas.length} línea${filtradas.length===1?'':'s'} encontrada${filtradas.length===1?'':'s'}`;
+
+  if(filtradas.length===0){
+    $resultados.innerHTML = '<div class="vacio">No se encontraron líneas con esos filtros.<br>Probá ampliar la búsqueda o agregar más líneas a la base de datos.</div>';
+    return;
+  }
+
+  $resultados.innerHTML = filtradas.map(l=>`
+    <div class="card">
+      <div class="card-head">
+        <span class="numero">${l.numero}</span>
+        <span class="tag ${l.tipo}">${l.tipo}</span>
+        <span class="empresa">${l.empresa}</span>
+      </div>
+      <div class="campo">
+        <span class="etiqueta">Cabeceras</span>
+        ${l.cabeceras.map(c=>`<span class="chip">${c}</span>`).join('')}
+      </div>
+      <div class="campo">
+        <span class="etiqueta">Barrios / localidades</span>
+        ${l.barrios.map(b=>`<span class="chip">${b}</span>`).join('')}
+      </div>
+      <div class="campo">
+        <span class="etiqueta">Ramales</span>
+        ${l.ramales.map(r=>`<div class="ramal"><b>${r.nombre}:</b> ${r.recorrido}</div>`).join('')}
+      </div>
+      ${l.comparteCon.length? `
+      <div class="campo">
+        <span class="etiqueta">Comparte recorrido con</span>
+        ${l.comparteCon.map(n=>`<span class="chip">Línea ${n}</span>`).join('')}
+      </div>` : ''}
+      ${l.notas? `<div class="campo"><span class="etiqueta">Notas</span>${l.notas}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+[$buscador,$cabecera,$barrio,$tipo,$comparte].forEach(el=>{
+  el.addEventListener('input', renderizar);
+  el.addEventListener('change', renderizar);
+});
+
+renderizar();
+</script>
+
+</body>
+</html>
